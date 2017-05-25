@@ -1,0 +1,21 @@
+#####################################################
+#  SMOOTH THE PIA SURFACES AFTER CREATING IN MATLAB #
+#####################################################
+
+#Right
+
+mris_extract_main_component $SUBS/$SUB/vol/rh_filled.surf $SUBS/$SUB/vol/rh_filled.surf.main 
+
+mris_smooth -nw -n 30 $SUBS/$SUB/vol/rh_filled.surf.main $SUBS/$SUB/vol/rh.surf.smooth
+
+#Left
+
+mris_extract_main_component $SUBS/$SUB/vol/lh_filled.surf $SUBS/$SUB/vol/lh_filled.surf.main 
+
+mris_smooth -nw -n 30 $SUBS/$SUB/vol/lh_filled.surf.main $SUBS/$SUB/vol/lh.surf.smooth
+
+#BOTH
+
+mris_extract_main_component $SUBS/$SUB/vol/filled.surf $SUBS/$SUB/vol/filled.surf.main 
+
+mris_smooth -nw -n 30 $SUBS/$SUB/vol/filled.surf.main $SUBS/$SUB/vol/filled.surf.smooth

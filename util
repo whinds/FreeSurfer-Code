@@ -1,0 +1,37 @@
+#crop the navigation halo out of the CT
+mri_convert $FS_SUBS/$SUB/vol/CT.nii $FS_SUBS/$SUB/vol/CTo.nii
+mri_convert $FS_SUBS/$SUB/vol/CT.nii $FS_SUBS/$SUB/vol/CT.nii --slice-crop 1 356
+mri_convert $FS_SUBS/$SUB/vol/CTo.nii $FS_SUBS/$SUB/vol/CT.nii --cropsize 408 458 356
+mri_convert $FS_SUBS/$SUB/vol/CTo.nii $FS_SUBS/$SUB/vol/CT.nii --crop 254 283 176
+mri_convert $FS_SUBS/$SUB/vol/CTo.nii $FS_SUBS/$SUB/vol/CT.nii -c -oc 254 283 176
+
+mri_binarize --i $FS_SUBS/$SUB/vol/CTo.nii --o $FS_SUBS/$SUB/vol/CT.nii --max 0 --binval 0 --merge $FS_SUBS/$SUB/vol/CTo.nii
+
+mri_convert $FS_SUBS/$SUB/vol/cropped.nii.gz $FS_SUBS/$SUB/vol/CTc.nii
+
+%%%%%%%%%%%%%
+%%% WHEN NO MRI IS AVAILABLE (PACEMAKERS, VAD, ETC.)
+%%% NORMALIZE WITH MNI BRAIN (not perfect, but best option)
+%%%%%%%%%%%%%%%%%
+
+cp -r $FS_SUBS/fsaverage/ $FS_SUBS/$SUB/
+
+mri_convert $FS_SUBS/fsaverage/mri/T1.mgz $FS_SUBS/fsaverage/mri/T1.nii
+
+flirt -usesqform -in $FS_SUBS/$SUB/vol/CT.nii -ref $FS_SUBS/fsaverage/mri/T1.nii -out $FS_SUBS/$SUB/vol/CT2MRI.nii.gz -omat $FS_SUBS/$SUB/vol/CT2MRI.mat -cost mutualinfo
+
+tkmedit -f $FS_SUBS/$SUB/vol/CT2MRI.nii.gz -surface $FS_SUBS/fsaverage/surf/rh.pial -aux $FS_SUBS/fsaverage/mri/T1.nii
+
+% manually correct the registration
+tkregister2 --s $SUB --mov $FS_SUBS/$SUB/vol/CT2MRI.nii.gz --surf orig --reg $FS_SUBS/$SUB/vol/CT2MRI.reg --regheader
+
+tkregister2 --targ $FS_SUBS/$SUB/mri/T1.nii --mov $FS_SUBS/$SUB/vol/CT.nii --ltaout $FS_SUBS/$SUB/vol/CT2MRI.lta --noedit --reg $FS_SUBS/$SUB/vol/CT2MRI.reg
+
+cp -r $FS_SUBS/$SUB/ $SUBS/$SUB/ 
+
+
+
+tkmedit -f $FS_SUBS/$SUB/mri/orig.mgz -surface $FS_SUBS/$SUB/surf/lh.pial -aux $FS_SUBS/myscans/mri/orig.mgz
+
+
+
